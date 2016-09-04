@@ -12,17 +12,19 @@ import (
 )
 
 type FilenameData struct {
-	Year  string
-	Month string
-	Day   string
+	Year    string
+	Month   string
+	Day     string
+	Channel string
 }
 
-func Write(filenameTemplate string, text string) {
+func Write(filenameTemplate string, channel string, text string) {
 	var t = time.Now()
 	var d = FilenameData{
-		Year:  t.Format("2006"),
-		Month: t.Format("01"),
-		Day:   t.Format("02"),
+		Year:    t.Format("2006"),
+		Month:   t.Format("01"),
+		Day:     t.Format("02"),
+		Channel: channel,
 	}
 	var tmpl, err = template.New("filename").Parse(filenameTemplate)
 	if err != nil {
@@ -58,7 +60,7 @@ func main() {
 	var nick = flag.String("nick", "[logbot]", "bot's nickname")
 	var ident = flag.String("ident", "logbot", "bot's username")
 	var channel = flag.String("channel", "#channel", "channel to join")
-	var filename = flag.String("filename", "/var/www/logs/{{.Year}}/{{.Year}}-{{.Month}}-{{.Day}}.txt", "where the logs should be stored")
+	var filename = flag.String("filename", "/var/www/logs/{{.Channel}}/{{.Year}}/{{.Year}}-{{.Month}}-{{.Day}}.txt", "where the logs should be stored")
 	flag.Parse()
 
 	// Connect to IRC
@@ -70,13 +72,13 @@ func main() {
 	conn.AddCallback("PRIVMSG", func(e *irc.Event) {
 		var timestamp = time.Now().Format("15:04:05")
 		var msg = fmt.Sprintf("%s <%s> %s", timestamp, e.Nick, e.Message())
-		Write(*filename, msg)
+		Write(*filename, e.Arguments[0], msg)
 	})
 
 	conn.AddCallback("CTCP_ACTION", func(e *irc.Event) {
 		var timestamp = time.Now().Format("15:04:05")
 		var msg = fmt.Sprintf("%s * %s %s", timestamp, e.Nick, e.Message())
-		Write(*filename, msg)
+		Write(*filename, e.Arguments[0], msg)
 	})
 
 	conn.Wait()
