@@ -2,7 +2,9 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"github.com/thoj/go-ircevent"
+	"time"
 )
 
 func main() {
@@ -18,6 +20,12 @@ func main() {
 
 	conn.Connect(*addr)
 	conn.Join(*channel)
+
+	conn.AddCallback("PRIVMSG", func(e *irc.Event) {
+		var timestamp = time.Now().Format("15:04:05")
+		var msg = fmt.Sprintf("%s <%s> %s", timestamp, e.Nick, e.Message())
+		fmt.Println(msg)
+	})
 
 	conn.Wait()
 }
