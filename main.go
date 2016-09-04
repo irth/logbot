@@ -7,6 +7,7 @@ import (
 	"github.com/thoj/go-ircevent"
 	"os"
 	"path"
+	"regexp"
 	"text/template"
 	"time"
 )
@@ -49,7 +50,18 @@ func Write(filenameTemplate string, channel string, text string) {
 		panic(err)
 	}
 
-	_, err = file.WriteString(text + "\n")
+	r, err := regexp.Compile(`[\x02\x0F\x16\x1D\x1F]|\x03([0-9]{0,2}(,[0-9]{0,2})?)?`)
+	if err != nil {
+		panic(err)
+	}
+
+	s := r.ReplaceAll([]byte(text), []byte{})
+	_, err = file.Write(s)
+	if err != nil {
+		panic(err)
+	}
+
+	_, err = file.WriteString("\n")
 	if err != nil {
 		panic(err)
 	}
