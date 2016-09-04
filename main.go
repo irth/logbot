@@ -27,5 +27,11 @@ func main() {
 		fmt.Println(msg)
 	})
 
+	conn.AddCallback("CTCP_ACTION", func(e *irc.Event) {
+		var timestamp = time.Now().Format("15:04:05")
+		var msg = fmt.Sprintf("%s * %s %s", timestamp, e.Nick, e.Message())
+		fmt.Println(msg)
+	})
+
 	conn.Wait()
 }
